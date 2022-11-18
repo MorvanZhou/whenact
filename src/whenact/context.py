@@ -22,6 +22,7 @@ class PipelineContext:
     def __init__(self, base_ctx: typing.Optional[BaseContext] = None):
         self._ctx = base_ctx
         self._pipeline_output = None
+        self._cache = {}
 
     def set_pipeline_output(self, data):
         self._pipeline_output = data
@@ -33,10 +34,16 @@ class PipelineContext:
             return self.__getattribute__(item)
 
     def __getitem__(self, item):
-        return self._ctx.__getitem__(item)
+        try:
+            return self._ctx.__getitem__(item)
+        except AttributeError:
+            return self._cache[item]
 
     def __setitem__(self, key, value):
-        self._ctx.__setitem__(key, value)
+        try:
+            self._ctx.__setitem__(key, value)
+        except AttributeError:
+            self._cache[key] = value
 
     @property
     def last_output(self):
