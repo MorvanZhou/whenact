@@ -57,13 +57,13 @@ class Pipeline:
     def remove_policy(self, name: str):
         del self.data[name]
 
-    def run(self, context: BaseContext):
+    def run(self, context: typing.Optional[BaseContext] = None):
         output = None
         for res in self.iter_run(context=context):
             output = res
         return output
 
-    def iter_run(self, context: BaseContext):
+    def iter_run(self, context: typing.Optional[BaseContext] = None):
         p_ctx = PipelineContext(base_ctx=context)
         for policy in self.data.values():
             keep = True

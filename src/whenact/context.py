@@ -1,3 +1,5 @@
+import typing
+
 
 class BaseContext:
     def __init__(self):
@@ -17,11 +19,11 @@ class BaseContext:
 
 
 class PipelineContext:
-    def __init__(self, base_ctx: BaseContext):
+    def __init__(self, base_ctx: typing.Optional[BaseContext] = None):
         self._ctx = base_ctx
         self._pipeline_output = None
 
-    def _set_pipeline_output(self, data):
+    def set_pipeline_output(self, data):
         self._pipeline_output = data
 
     def __getattr__(self, item):

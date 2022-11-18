@@ -107,7 +107,7 @@ class ContextTest(unittest.TestCase):
         self.assertEqual("test_method", p_ctx.test_method())
         self.assertEqual("test_attr", p_ctx.test_attr)
 
-        p_ctx._set_pipeline_output("aa")
+        p_ctx.set_pipeline_output("aa")
         self.assertEqual("aa", p_ctx.last_output)
 
     def test_run_context(self):
@@ -135,3 +135,23 @@ class ContextTest(unittest.TestCase):
         ])
         for i in range(1, 4):
             self.assertEqual(i, p.run(ctx))
+
+    def test_no_ctx(self):
+        @whenact.when
+        def nw(ctx):
+            return True
+
+        @whenact.act
+        def na1(ctx):
+            return 21
+
+        @whenact.act
+        def na2(ctx):
+            return 22
+
+        p = whenact.create_pipeline([
+            [nw, na1, na2]
+        ])
+
+        res = p.run()
+        self.assertEqual(22, res)
