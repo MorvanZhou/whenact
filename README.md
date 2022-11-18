@@ -14,12 +14,19 @@ When all `when` in one policy set is satisfied, than it runs to it's following `
 is satisfied or not, the next `when` will be checked and executed. When all policies have been checked and executed,
 this pipeline then finishes.
 
+# Install
+
+```shell
+pip install whenact
+```
+
 # Create WhenAct pipeline
 
 Before create a pipeline, you need to define `when` and `act` function first, then put them in the pipeline.
 
 ```python
 import whenact
+
 
 @whenact.when
 def w1(ctx):
