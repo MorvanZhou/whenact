@@ -57,13 +57,13 @@ class Pipeline:
     def remove_policy(self, name: str):
         del self.data[name]
 
-    def run(self, context: typing.Optional[BaseContext] = None):
+    def run(self, context: typing.Optional[BaseContext] = None, auto_break: bool = True):
         output = None
-        for res in self.iter_run(context=context):
+        for res in self.iter_run(context=context, auto_break=auto_break):
             output = res
         return output
 
-    def iter_run(self, context: typing.Optional[BaseContext] = None):
+    def iter_run(self, context: typing.Optional[BaseContext] = None, auto_break: bool = True):
         p_ctx = PipelineContext(base_ctx=context)
         for policy in self.data.values():
             keep = True
@@ -76,6 +76,8 @@ class Pipeline:
                 for a in policy.action:
                     a(p_ctx)
                     yield p_ctx.last_output
+                if auto_break:
+                    return
 
     def __getitem__(self, item) -> Policy:
         if isinstance(item, int):
@@ -102,7 +104,7 @@ def create_pipeline(config: typing.Sequence[typing.Sequence[typing.Callable]]) -
         to_action = False
         for wa in policy:
             try:
-                t = wa._type
+                t = getattr(wa, "_type")
             except AttributeError as e:
                 raise ValueError(f"when or act function must be decorated: {e}")
             if t == "when" and not to_action:
