@@ -21,16 +21,13 @@ Before create a pipeline, you need to define `when` and `act` function first, th
 ```python
 import whenact
 
-
 @whenact.when
 def w1(ctx):
     return True
 
-
 @whenact.act
 def a1(ctx):
     return "done"
-
 
 pipeline = whenact.create_pipeline(config=[
     [w1, a1]
@@ -48,26 +45,21 @@ More complex pipeline can be like this:
 ```python
 import whenact
 
-
 @whenact.when
 def w1(ctx):
     return False
-
 
 @whenact.when
 def w2(ctx):
     return True
 
-
 @whenact.act
 def a1(ctx):
     ctx["action"] = "a1 action"
 
-
 @whenact.act
 def a2(ctx):
     ctx["action"] = "a2 action"
-
 
 @whenact.act
 def a3(ctx):
@@ -80,15 +72,14 @@ pipeline = whenact.create_pipeline(config=[
 ])
 
 print(pipeline)
-
-
 # p0: [w1] > [a1]
+# p1: [w2] > [a2 > a3]
 
 class TestContext(whenact.BaseContext):
     pass
 
-
 ctx = TestContext()
+
 result = pipeline.run(ctx)
 assert result is None
 assert ctx["action"] == "a2 action with a3"
@@ -99,22 +90,20 @@ There is another way to set a pipeline, additionally, to set policy name.
 ```python
 import whenact
 
-
 @whenact.when
 def w1(ctx):
     return True
-
 
 @whenact.act
 def a1(ctx):
     ctx["r1"] = 1
     return "done"
 
-
 pipeline = whenact.Pipeline(
     [whenact.Policy(when=[w1], action=[a1], name="my_policy1")]
 )
 print(pipeline)
+# p0: [w1] > [a1]
 ```
 
 # More examples
