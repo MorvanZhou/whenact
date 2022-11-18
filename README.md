@@ -10,9 +10,23 @@ policy1: [when1] > [action10 > action11]
 policy2: [when20 > when21] > [action2]
 ```
 
-When all `when` in one policy set is satisfied, than it runs to it's following `action`. No matter the previous `when`
-is satisfied or not, the next `when` will be checked and executed. When all policies have been checked and executed,
-this pipeline then finishes.
+When all `when` in one policy set is satisfied, than it runs to it's following `action`. No matter the `when` in
+previous policy is satisfied or not, the `when` in next policy will be checked and executed. When all policies have been
+checked and executed, this pipeline then finishes.
+
+For example:
+
+```text
+policy0: [when0=True] > [action0]
+policy1: [when1=False] > X
+policy2: [when20=True > when21=False] > X
+```
+
+```text
+policy0: [when0=True] > X 
+policy1: [when1=True] > [action10 > action11]
+policy2: [when20=False > X] > X
+```
 
 # Install
 
