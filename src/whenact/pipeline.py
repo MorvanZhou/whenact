@@ -20,6 +20,34 @@ def _reset_policy_name():
 
 
 @dataclass
+class FunctionSummary:
+    function_name: str
+    output: typing.Any
+
+
+@dataclass
+class HistorySummary:
+    policy_name: str
+    policy_summary: typing.List[FunctionSummary] = field(default_factory=list)
+
+
+@dataclass
+class PipelineHistory:
+    outputs: typing.List[typing.Any] = field(default_factory=list)
+    summary: typing.List[HistorySummary] = field(default_factory=list)
+
+    @property
+    def acted(self) -> bool:
+        return len(self.outputs) > 0
+
+    @property
+    def last_output(self):
+        if len(self.outputs) == 0:
+            return None
+        return self.outputs[-1]
+
+
+@dataclass
 class Policy:
     when: typing.Sequence[typing.Callable]
     action: typing.Sequence[typing.Callable]
@@ -58,26 +86,32 @@ class Pipeline:
         del self.data[name]
 
     def run(self, context: typing.Optional[BaseContext] = None, auto_break: bool = True):
-        output = None
-        for res in self.iter_run(context=context, auto_break=auto_break):
-            output = res
-        return output
-
-    def iter_run(self, context: typing.Optional[BaseContext] = None, auto_break: bool = True):
         p_ctx = PipelineContext(base_ctx=context)
-        for policy in self.data.values():
+        hist = PipelineHistory()
+        for name, policy in self.data.items():
             keep = True
             for w in policy.when:
                 keep = w(p_ctx)
-                yield keep
+                if len(hist.summary) == 0 or hist.summary[-1].policy_name != name:
+                    hist.summary.append(HistorySummary(
+                        policy_name=name,
+                        policy_summary=[FunctionSummary(function_name=w.__name__, output=keep)]
+                    ))
+                else:
+                    hist.summary[-1].policy_summary.append(
+                        FunctionSummary(function_name=w.__name__, output=keep))
                 if not keep:
                     break
             if keep:
                 for a in policy.action:
-                    a(p_ctx)
-                    yield p_ctx.last_output
+                    o = a(p_ctx)
+                    hist.summary[-1].policy_summary.append(
+                        FunctionSummary(function_name=a.__name__, output=o)
+                    )
+                    hist.outputs.append(o)
                 if auto_break:
-                    return
+                    return hist
+        return hist
 
     def __getitem__(self, item) -> Policy:
         if isinstance(item, int):

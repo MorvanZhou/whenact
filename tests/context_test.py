@@ -51,7 +51,8 @@ class ContextTest(unittest.TestCase):
             [w3, w3, a3, a4]
         ])
         for i in range(1, 4):
-            self.assertEqual(i, p.run(ctx))
+            hist = p.run(ctx)
+            self.assertEqual(i, hist.last_output)
 
     def test_no_ctx(self):
         @whenact.when
@@ -70,5 +71,11 @@ class ContextTest(unittest.TestCase):
             [nw, na1, na2]
         ])
 
-        res = p.run()
-        self.assertEqual(22, res)
+        hist = p.run()
+        self.assertEqual(22, hist.last_output)
+        self.assertEqual([21, 22], hist.outputs)
+        self.assertEqual('p0', hist.summary[0].policy_name)
+        self.assertEqual('nw', hist.summary[0].policy_summary[0].function_name)
+        self.assertEqual(True, hist.summary[0].policy_summary[0].output)
+        self.assertEqual(21, hist.summary[0].policy_summary[1].output)
+        self.assertEqual(22, hist.summary[0].policy_summary[2].output)
