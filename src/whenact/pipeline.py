@@ -24,11 +24,20 @@ class FunctionSummary:
     function_name: str
     output: typing.Any
 
+    def __repr__(self):
+        return f"""function '{self.function_name}' returns {self.output}"""
+
 
 @dataclass
 class HistorySummary:
     policy_name: str
     policy_summary: typing.List[FunctionSummary] = field(default_factory=list)
+
+    def __repr__(self):
+        return f"{self.policy_name}: {' > '.join([s.function_name for s in self.policy_summary])}"
+
+    def __str__(self):
+        return self.__repr__()
 
 
 @dataclass
@@ -90,22 +99,21 @@ class Pipeline:
         hist = PipelineHistory()
         for name, policy in self.data.items():
             keep = True
+            ps = []
+            hist.summary.append(HistorySummary(
+                policy_name=name,
+                policy_summary=ps
+            ))
             for w in policy.when:
                 keep = w(p_ctx)
-                if len(hist.summary) == 0 or hist.summary[-1].policy_name != name:
-                    hist.summary.append(HistorySummary(
-                        policy_name=name,
-                        policy_summary=[FunctionSummary(function_name=w.__name__, output=keep)]
-                    ))
-                else:
-                    hist.summary[-1].policy_summary.append(
-                        FunctionSummary(function_name=w.__name__, output=keep))
+                ps.append(
+                    FunctionSummary(function_name=w.__name__, output=keep))
                 if not keep:
                     break
             if keep:
                 for a in policy.action:
                     o = a(p_ctx)
-                    hist.summary[-1].policy_summary.append(
+                    ps.append(
                         FunctionSummary(function_name=a.__name__, output=o)
                     )
                     hist.outputs.append(o)

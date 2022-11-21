@@ -9,7 +9,6 @@ def act(func):
     @wraps(func)
     def wrapper(context: PipelineContext, *args, **kwargs):
         res = func(context, *args, **kwargs)
-        context.set_pipeline_output(res)
         return res
 
     return wrapper

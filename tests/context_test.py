@@ -24,7 +24,7 @@ class ContextTest(unittest.TestCase):
         self.assertEqual("test_method", p_ctx.test_method())
         self.assertEqual("test_attr", p_ctx.test_attr)
 
-        p_ctx.set_pipeline_output("aa")
+        p_ctx.last_output = "aa"
         self.assertEqual("aa", p_ctx.last_output)
 
     def test_run_context(self):
