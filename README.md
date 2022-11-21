@@ -50,6 +50,7 @@ def w1(ctx):
 def a1(ctx):
     return "done"
 
+
 pipeline = whenact.create_pipeline(config=[
     [w1, a1]
 ])
@@ -57,8 +58,9 @@ pipeline = whenact.create_pipeline(config=[
 print(pipeline)
 # p0: [w1] > [a1]
 
-result = pipeline.run()
-assert result == "done"
+hist = pipeline.run()
+assert hist.last_output == "done"
+assert hist.outputs == ["done"]
 ```
 
 More complex pipeline can be like this:
@@ -93,16 +95,23 @@ pipeline = whenact.create_pipeline(config=[
 ])
 
 print(pipeline)
+
+
 # p0: [w1] > [a1]
 # p1: [w2] > [a2 > a3]
 
 class TestContext(whenact.BaseContext):
     pass
 
+
 ctx = TestContext()
 
-result = pipeline.run(ctx)
-assert result is None
+hist = pipeline.run(ctx)
+print(hist.summary)
+# [p1: w1, p2: w2 > a2 > a3]
+
+assert hist.last_output is None
+assert hist.outputs == [None, None]
 assert ctx["action"] == "a2 action with a3"
 ```
 
