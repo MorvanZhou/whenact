@@ -88,7 +88,7 @@ class Pipeline:
 
     def add_policy(self, policy: Policy):
         if policy.name in self.data:
-            raise ValueError(f"{policy.name=} is exist in pipeline, please use new one")
+            raise ValueError(f"name={policy.name} is exist in pipeline, please use new one")
         self.data[policy.name] = policy
 
     def remove_policy(self, name: str):
