@@ -65,6 +65,17 @@ class Policy:
     def __post_init__(self):
         if self.name is None:
             self.name = _get_policy_name()
+        if isinstance(self.when, tuple):
+            self.when = list(self.when)
+        if isinstance(self.action, tuple):
+            self.action = list(self.action)
+        if not isinstance(self.when, list):
+            raise TypeError("when must be list type")
+        if not isinstance(self.action, list):
+            raise TypeError("action must be list type")
+        for wa in self.when + self.action:
+            if not isinstance(wa, typing.Callable):
+                raise TypeError("when and action must be a list of function type")
 
 
 class Pipeline:
