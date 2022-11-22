@@ -17,6 +17,12 @@ class BaseContext:
             del self._cache_data[key]
             self.__delattr__(key)
 
+    def set(self, key: str, value):
+        self._cache_data[key] = value
+
+    def get(self, key: str, default=None):
+        return self._cache_data.get(key, default)
+
 
 class PipelineContext:
     def __init__(self, base_ctx: typing.Optional[BaseContext] = None):
