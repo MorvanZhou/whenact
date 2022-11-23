@@ -6,9 +6,9 @@ WhenAct is a module that defines a decision pipeline. A
 The executing flow looks like:
 
 ```text
-policy0: [when0] > [action0]
-policy1: [when1] > [action10 > action11]
-policy2: [when20 > when21] > [action2]
+task0: [when0] > [action0]
+task1: [when1] > [action10 > action11]
+task2: [when20 > when21] > [action2]
 ```
 
 When all `when` in one policy set is satisfied, than it runs to it's following `action`. No matter the `when` in
@@ -134,7 +134,7 @@ def a1(ctx):
 
 
 pipeline = whenact.Pipeline(
-    [whenact.Task(when=[w1], action=[a1], name="my_policy1")]
+    [whenact.Behavior(when=[w1], action=[a1], name="my_policy1")]
 )
 print(pipeline)
 # p0: [w1] > [a1]

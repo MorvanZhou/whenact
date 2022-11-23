@@ -133,7 +133,7 @@ def a1(ctx):
 
 
 pipeline = whenact.Pipeline(
-    [whenact.Task(when=[w1], action=[a1], name="my_policy1")]
+    [whenact.Behavior(when=[w1], action=[a1], name="my_policy1")]
 )
 print(pipeline)
 # p0: [w1] > [a1]

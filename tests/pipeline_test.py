@@ -58,15 +58,15 @@ class PipelineTest(unittest.TestCase):
         def _a2(ctx: whenact.PipelineContext):
             ctx["r2"] = 2
 
-        whenact.task._reset_task_name()
+        whenact.behavior._reset_behavior_name()
         p = whenact.Pipeline([
-            whenact.Task([w_f], [_a1, _a2]),
-            whenact.Task([w_t], [_a1])
+            whenact.Behavior([w_f], [_a1, _a2]),
+            whenact.Behavior([w_t], [_a1])
         ])
-        self.assertEqual("p0", p[0].name)
-        self.assertEqual("p1", p[1].name)
-        self.assertEqual("p0", p["p0"].name)
-        self.assertEqual("p1", p["p1"].name)
+        self.assertEqual("b0", p[0].name)
+        self.assertEqual("b1", p[1].name)
+        self.assertEqual("b0", p["b0"].name)
+        self.assertEqual("b1", p["b1"].name)
 
         res = p.run(context=TestContext())
         self.assertEqual("done", res.last_output)
@@ -92,15 +92,15 @@ class PipelineTest(unittest.TestCase):
                 [w_t, _a1]
             ])
 
-        whenact.task._reset_task_name()
+        whenact.behavior._reset_behavior_name()
         p = whenact.create_pipeline([
             [w_f, _a1, _a2],
             [w_t, _a1]
         ])
-        self.assertEqual("p0", p[0].name)
-        self.assertEqual("p1", p[1].name)
-        self.assertEqual("p0", p["p0"].name)
-        self.assertEqual("p1", p["p1"].name)
+        self.assertEqual("b0", p[0].name)
+        self.assertEqual("b1", p[1].name)
+        self.assertEqual("b0", p["b0"].name)
+        self.assertEqual("b1", p["b1"].name)
 
         res = p.run(context=TestContext())
         self.assertEqual("done", res.last_output)
@@ -146,3 +146,8 @@ class PipelineTest(unittest.TestCase):
         hist = p.run()
         self.assertEqual(True, hist.acted)
         self.assertEqual([2], hist.outputs)
+
+    def test_empty_whenact(self):
+        p = whenact.Pipeline()
+        with self.assertRaises(ValueError):
+            p.add([], [])

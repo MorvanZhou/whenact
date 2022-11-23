@@ -1,4 +1,4 @@
-import typing
+import typing as tp
 
 
 class BaseContext:
@@ -25,7 +25,7 @@ class BaseContext:
 
 
 class PipelineContext:
-    def __init__(self, base_ctx: typing.Optional[BaseContext] = None):
+    def __init__(self, base_ctx: tp.Optional[BaseContext] = None):
         self._ctx = base_ctx
         self._cache = {}
 
