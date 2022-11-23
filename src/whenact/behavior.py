@@ -1,21 +1,19 @@
+import itertools
 import typing as tp
 from dataclasses import dataclass, field
 
 from whenact.types import WhenFnType, ActFnType
 
-_BEHAVIOR_NAME_COUNT = 0
+_COUNT = itertools.count()
 
 
 def _reset_behavior_name():
-    global _BEHAVIOR_NAME_COUNT
-    _BEHAVIOR_NAME_COUNT = 0
+    global _COUNT
+    _COUNT = itertools.count()
 
 
 def _get_behavior_name():
-    global _BEHAVIOR_NAME_COUNT
-    name = f"b{_BEHAVIOR_NAME_COUNT}"
-    _BEHAVIOR_NAME_COUNT += 1
-    return name
+    return f"b{next(_COUNT)}"
 
 
 @dataclass
