@@ -58,10 +58,10 @@ class PipelineTest(unittest.TestCase):
         def _a2(ctx: whenact.PipelineContext):
             ctx["r2"] = 2
 
-        whenact.pipeline._reset_policy_name()
+        whenact.task._reset_task_name()
         p = whenact.Pipeline([
-            whenact.Policy([w_f], [_a1, _a2]),
-            whenact.Policy([w_t], [_a1])
+            whenact.Task([w_f], [_a1, _a2]),
+            whenact.Task([w_t], [_a1])
         ])
         self.assertEqual("p0", p[0].name)
         self.assertEqual("p1", p[1].name)
@@ -70,7 +70,7 @@ class PipelineTest(unittest.TestCase):
 
         res = p.run(context=TestContext())
         self.assertEqual("done", res.last_output)
-        self.assertEqual(2, len(p.view_pipe()))
+        self.assertEqual(2, len(p.view()))
 
         context = TestContext()
         hist = p.run(context=context)
@@ -92,7 +92,7 @@ class PipelineTest(unittest.TestCase):
                 [w_t, _a1]
             ])
 
-        whenact.pipeline._reset_policy_name()
+        whenact.task._reset_task_name()
         p = whenact.create_pipeline([
             [w_f, _a1, _a2],
             [w_t, _a1]
@@ -104,7 +104,7 @@ class PipelineTest(unittest.TestCase):
 
         res = p.run(context=TestContext())
         self.assertEqual("done", res.last_output)
-        self.assertEqual(2, len(p.view_pipe()))
+        self.assertEqual(2, len(p.view()))
 
     def test_break(self):
         p = whenact.create_pipeline([

@@ -1,7 +1,6 @@
 # WhenAct
 
-WhenAct is a module that defines a decision pipeline. A
-[中文文档](https://github.com/MorvanZhou/whenact/tree/main/README_CN.md) is available to.
+WhenAct is a module that defines a decision pipeline.
 
 The executing flow looks like:
 

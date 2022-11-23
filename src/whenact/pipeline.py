@@ -3,20 +3,8 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 
 from whenact.context import PipelineContext, BaseContext
-
-_POLICY_NAME_COUNT = 0
-
-
-def _get_policy_name():
-    global _POLICY_NAME_COUNT
-    name = f"p{_POLICY_NAME_COUNT}"
-    _POLICY_NAME_COUNT += 1
-    return name
-
-
-def _reset_policy_name():
-    global _POLICY_NAME_COUNT
-    _POLICY_NAME_COUNT = 0
+from whenact.task import Task
+from whenact.types import WhenFnType, ActFnType
 
 
 @dataclass
@@ -56,53 +44,31 @@ class PipelineHistory:
         return self.outputs[-1]
 
 
-@dataclass
-class Policy:
-    when: typing.Sequence[typing.Callable]
-    action: typing.Sequence[typing.Callable]
-    name: str = field(default_factory=_get_policy_name)
-
-    def __post_init__(self):
-        if self.name is None:
-            self.name = _get_policy_name()
-        if isinstance(self.when, tuple):
-            self.when = list(self.when)
-        if isinstance(self.action, tuple):
-            self.action = list(self.action)
-        if not isinstance(self.when, list):
-            raise TypeError("when must be list type")
-        if not isinstance(self.action, list):
-            raise TypeError("action must be list type")
-        for wa in self.when + self.action:
-            if not isinstance(wa, typing.Callable):
-                raise TypeError("when and action must be a list of function type")
-
-
 class Pipeline:
-    def __init__(self, pipe_list: typing.Optional[typing.Sequence[Policy]] = None):
-        self.data: typing.OrderedDict[str, Policy] = OrderedDict()
+    def __init__(self, pipe_list: typing.Optional[typing.Sequence[Task]] = None):
+        self.data: typing.OrderedDict[str, Task] = OrderedDict()
         if pipe_list is not None:
             for p in pipe_list:
-                self.add_policy(p)
+                self.add_task(p)
 
     def add(
             self,
-            when: typing.Union[typing.Callable, typing.Sequence[typing.Callable]],
-            action: typing.Union[typing.Callable, typing.Sequence[typing.Callable]],
+            when: typing.Union[WhenFnType, typing.Sequence[WhenFnType]],
+            action: typing.Union[ActFnType, typing.Sequence[ActFnType]],
             name: typing.Optional[str] = None
     ):
         if not isinstance(when, (tuple, list)):
             when = [when]
         if not isinstance(action, (tuple, list)):
             action = [action]
-        self.add_policy(Policy(when=when, action=action, name=name))
+        self.add_task(Task(when=when, action=action, name=name))
 
-    def add_policy(self, policy: Policy):
+    def add_task(self, policy: Task):
         if policy.name in self.data:
             raise ValueError(f"name={policy.name} is exist in pipeline, please use new one")
         self.data[policy.name] = policy
 
-    def remove_policy(self, name: str):
+    def remove_task(self, name: str):
         del self.data[name]
 
     def run(self, context: typing.Optional[BaseContext] = None, auto_break: bool = True):
@@ -132,15 +98,15 @@ class Pipeline:
                     return hist
         return hist
 
-    def __getitem__(self, item) -> Policy:
+    def __getitem__(self, item) -> Task:
         if isinstance(item, int):
             return list(self.data.values())[item]
         return self.data[item]
 
     def __str__(self):
-        return "\n".join(self.view_pipe())
+        return "\n".join(self.view())
 
-    def view_pipe(self):
+    def view(self):
         res = []
         for name, p in self.data.items():
             res.append(f"{name}: "
@@ -149,7 +115,7 @@ class Pipeline:
         return res
 
 
-def create_pipeline(config: typing.Sequence[typing.Sequence[typing.Callable]]) -> Pipeline:
+def create_pipeline(config: typing.Sequence[typing.Sequence[ActFnType]]) -> Pipeline:
     p = Pipeline()
     for policy in config:
         when = []
@@ -167,5 +133,5 @@ def create_pipeline(config: typing.Sequence[typing.Sequence[typing.Callable]]) -
                 action.append(wa)
             else:
                 raise TypeError("[when] function must be set before [act] function")
-        p.add_policy(Policy(when=when, action=action))
+        p.add_task(Task(when=when, action=action))
     return p
