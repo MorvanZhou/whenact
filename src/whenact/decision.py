@@ -17,7 +17,7 @@ def _get_behavior_name():
 
 
 @dataclass
-class Behavior:
+class Decision:
     when: tp.Sequence[WhenFnType]
     act: tp.Sequence[ActFnType]
     name: str = field(default_factory=_get_behavior_name)

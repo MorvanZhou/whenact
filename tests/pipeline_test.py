@@ -58,10 +58,10 @@ class PipelineTest(unittest.TestCase):
         def _a2(ctx: whenact.PipelineContext):
             ctx["r2"] = 2
 
-        whenact.behavior._reset_behavior_name()
+        whenact.decision._reset_behavior_name()
         p = whenact.Pipeline([
-            whenact.Behavior([w_f], [_a1, _a2]),
-            whenact.Behavior([w_t], [_a1])
+            whenact.Decision([w_f], [_a1, _a2]),
+            whenact.Decision([w_t], [_a1])
         ])
         self.assertEqual("b0", p[0].name)
         self.assertEqual("b1", p[1].name)
@@ -92,7 +92,7 @@ class PipelineTest(unittest.TestCase):
                 [w_t, _a1]
             ])
 
-        whenact.behavior._reset_behavior_name()
+        whenact.decision._reset_behavior_name()
         p = whenact.create_pipeline([
             [w_f, _a1, _a2],
             [w_t, _a1]

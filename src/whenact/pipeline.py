@@ -1,18 +1,18 @@
 import typing as tp
 from collections import OrderedDict
 
-from whenact.behavior import Behavior
 from whenact.context import PipelineContext, BaseContext
-from whenact.history import PipelineHistory, HistorySummary, FunctionSummary
+from whenact.decision import Decision
+from whenact.history import PipelineHistory
 from whenact.types import WhenFnType, ActFnType
 
 
 class Pipeline:
-    def __init__(self, pipe_list: tp.Optional[tp.Sequence[Behavior]] = None):
-        self.data: tp.OrderedDict[str, Behavior] = OrderedDict()
+    def __init__(self, pipe_list: tp.Optional[tp.Sequence[Decision]] = None):
+        self.data: tp.OrderedDict[str, Decision] = OrderedDict()
         if pipe_list is not None:
             for p in pipe_list:
-                self.add_behavior(p)
+                self.add_decision(p)
 
     def add(
             self,
@@ -24,44 +24,39 @@ class Pipeline:
             when = [when]
         if not isinstance(act, (tuple, list)):
             act = [act]
-        self.add_behavior(Behavior(when=when, act=act, name=name))
+        self.add_decision(Decision(when=when, act=act, name=name))
 
-    def add_behavior(self, task: Behavior):
+    def add_decision(self, task: Decision):
         if task.name in self.data:
             raise ValueError(f"name={task.name} is exist in pipeline, please use new one")
         self.data[task.name] = task
 
-    def remove_behavior(self, name: str):
+    def remove_decision(self, name: str):
         del self.data[name]
 
     def run(self, context: tp.Optional[BaseContext] = None, auto_break: bool = True):
         p_ctx = PipelineContext(base_ctx=context)
         hist = PipelineHistory()
-        for name, task in self.data.items():
+        for decision in self.data.values():
+            hist.add_decision(decision.name)
             keep = True
-            ps = []
-            hist.summary.append(HistorySummary(
-                behavior_name=name,
-                behavior_summary=ps
-            ))
-            for w in task.when:
+            for w in decision.when:
                 keep = w(p_ctx)
-                ps.append(
-                    FunctionSummary(function_name=w.__name__, output=keep))
+                hist.add_when_result(fn=w, output=keep)
                 if not keep:
                     break
             if keep:
-                for a in task.act:
+                for a in decision.act:
                     o = a(p_ctx)
-                    ps.append(
-                        FunctionSummary(function_name=a.__name__, output=o)
-                    )
-                    hist.outputs.append(o)
+                    hist.add_act_result(fn=a, output=o)
                 if auto_break:
                     return hist
         return hist
 
-    def __getitem__(self, item) -> Behavior:
+    def clear(self):
+        self.data.clear()
+
+    def __getitem__(self, item) -> Decision:
         if isinstance(item, int):
             return list(self.data.values())[item]
         return self.data[item]
@@ -96,5 +91,5 @@ def create_pipeline(config: tp.Sequence[tp.Sequence[ActFnType]]) -> Pipeline:
                 action.append(wa)
             else:
                 raise TypeError("[when] function must be set before [act] function")
-        p.add_behavior(Behavior(when=when, act=action))
+        p.add_decision(Decision(when=when, act=action))
     return p

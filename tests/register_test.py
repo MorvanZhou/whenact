@@ -31,6 +31,9 @@ class RegisterTest(unittest.TestCase):
         self.assertIsNone(hist.last_output)
         self.assertFalse(hist.acted)
 
+        whenact.clear()
+        whenact.add(when=[w_true, w_false], act=[a1, a2])
         whenact.add(when=[w_true, w_true], act=a2)
         hist = whenact.run(ctx)
+        self.assertEqual([2], hist.outputs)
         self.assertEqual(2, hist.last_output)

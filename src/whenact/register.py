@@ -24,7 +24,11 @@ def add(
 
 
 def remove(name: str):
-    PIPE.remove_behavior(name)
+    PIPE.remove_decision(name)
+
+
+def clear():
+    PIPE.clear()
 
 
 def run(context: BaseContext, auto_break: bool = True) -> PipelineHistory:
