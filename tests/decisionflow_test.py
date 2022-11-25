@@ -48,7 +48,7 @@ class PipelineTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             _w2(TestContext())
 
-    def test_pipe_no_name(self):
+    def test_flow_no_name(self):
         @whenact.act
         def _a1(ctx: whenact.PipelineContext):
             ctx["r1"] = 1
@@ -59,7 +59,7 @@ class PipelineTest(unittest.TestCase):
             ctx["r2"] = 2
 
         whenact.decision._reset_behavior_name()
-        p = whenact.Pipeline([
+        p = whenact.DecisionFlow([
             whenact.Decision([w_f], [_a1, _a2]),
             whenact.Decision([w_t], [_a1])
         ])
@@ -76,7 +76,7 @@ class PipelineTest(unittest.TestCase):
         hist = p.run(context=context)
         self.assertEqual("done", hist.last_output)
 
-    def test_pipe_with_name(self):
+    def test_flow_with_name(self):
         @whenact.act
         def _a1(ctx: whenact.PipelineContext):
             ctx["r1"] = 1
@@ -87,13 +87,13 @@ class PipelineTest(unittest.TestCase):
             ctx["r2"] = 2
 
         with self.assertRaises(TypeError):
-            _ = whenact.create_pipeline([
+            _ = whenact.create_flow([
                 [w_f, _a1, w_f, _a2],
                 [w_t, _a1]
             ])
 
         whenact.decision._reset_behavior_name()
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [w_f, _a1, _a2],
             [w_t, _a1]
         ])
@@ -107,7 +107,7 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(2, len(p.view()))
 
     def test_break(self):
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [w_t, a1],
             [w_t, a2]
         ])
@@ -119,7 +119,7 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(2, res.last_output)
 
     def test_multiple_when(self):
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [w_t, w_t, a2],
             [w_f, w_t, a1],
             [w_t, w_t, a3],
@@ -132,7 +132,7 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(3, res.last_output)
 
     def test_no_res(self):
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [w_f, a2],
         ])
         hist = p.run()
@@ -140,7 +140,7 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual([], hist.outputs)
         self.assertEqual(None, hist.last_output)
 
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [w_t, a2],
         ])
         hist = p.run()
@@ -148,6 +148,6 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual([2], hist.outputs)
 
     def test_empty_whenact(self):
-        p = whenact.Pipeline()
+        p = whenact.DecisionFlow()
         with self.assertRaises(ValueError):
             p.add([], [])

@@ -30,7 +30,7 @@ class DecisionResult:
 class PipelineHistory:
     outputs: tp.List[tp.Any] = field(default_factory=list)
     summary: tp.List[DecisionResult] = field(default_factory=list)
-    acted: bool = False  # if pipeline has behaved any action, then acted is True, False otherwise.
+    acted: bool = False  # if flow has behaved any action, then acted is True, otherwise False.
     __dict: dict = field(default_factory=dict, init=False)
 
     def add_when_result(self, fn: tp.Callable[[PipelineContext], bool], output: bool):

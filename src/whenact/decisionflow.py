@@ -7,12 +7,12 @@ from whenact.history import PipelineHistory
 from whenact.types import WhenFnType, ActFnType
 
 
-class Pipeline:
-    def __init__(self, pipe_list: tp.Optional[tp.Sequence[Decision]] = None):
+class DecisionFlow:
+    def __init__(self, decisions: tp.Optional[tp.Sequence[Decision]] = None):
         self.data: tp.OrderedDict[str, Decision] = OrderedDict()
-        if pipe_list is not None:
-            for p in pipe_list:
-                self.add_decision(p)
+        if decisions is not None:
+            for d in decisions:
+                self.add_decision(d)
 
     def add(
             self,
@@ -26,10 +26,10 @@ class Pipeline:
             act = [act]
         self.add_decision(Decision(when=when, act=act, name=name))
 
-    def add_decision(self, task: Decision):
-        if task.name in self.data:
-            raise ValueError(f"name={task.name} is exist in pipeline, please use new one")
-        self.data[task.name] = task
+    def add_decision(self, decision: Decision):
+        if decision.name in self.data:
+            raise ValueError(f"name={decision.name} is exist, please use new name")
+        self.data[decision.name] = decision
 
     def remove_decision(self, name: str):
         del self.data[name]
@@ -73,8 +73,8 @@ class Pipeline:
         return res
 
 
-def create_pipeline(config: tp.Sequence[tp.Sequence[ActFnType]]) -> Pipeline:
-    p = Pipeline()
+def create_flow(config: tp.Sequence[tp.Sequence[ActFnType]]) -> DecisionFlow:
+    p = DecisionFlow()
     for task in config:
         when = []
         action = []

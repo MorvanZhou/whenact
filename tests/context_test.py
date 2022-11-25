@@ -47,7 +47,7 @@ class ContextTest(unittest.TestCase):
             return ctx["ccc"]
 
         ctx = TestContext()
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [w3, w3, a3, a4]
         ])
         for i in range(1, 4):
@@ -67,7 +67,7 @@ class ContextTest(unittest.TestCase):
         def na2(ctx):
             return 22
 
-        p = whenact.create_pipeline([
+        p = whenact.create_flow([
             [nw, na1, na2]
         ])
 
