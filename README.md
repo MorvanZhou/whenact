@@ -1,32 +1,40 @@
 # WhenAct
 
-WhenAct is a module that defines a decision pipeline. A
+WhenAct is a module that defines a decision flow. A
 [中文文档](https://github.com/MorvanZhou/whenact/tree/main/README_CN.md) is available to.
 
 The executing flow looks like:
 
 ```text
-task0: [when0] > [action0]
-task1: [when1] > [action10 > action11]
-task2: [when20 > when21] > [action2]
+decision1: [when0] > [action0]
+decision2: [when1] > [action10 > action11]
+decision3: [when20 > when21] > [action2]
+decision4: [when31 > when32] > [action3]
 ```
 
-When all `when` in one policy set is satisfied, than it runs to it's following `action`. No matter the `when` in
-previous policy is satisfied or not, the `when` in next policy will be checked and executed. When all policies have been
-checked and executed, this pipeline then finishes.
+When all `when` in one decision is satisfied, than it runs to it's following `action`.
+
+This decision process has two modes,
+
+1. `auto_break=True`, when runs into the first `when=True`, this flow will finish after it's following `act`.
+2. `auto_break=False`, the flow will continue flow even when `when=False`.
 
 For example:
 
 ```text
-policy0: [when0=True] > [action0]
-policy1: [when1=False] > X
-policy2: [when20=True > when21=False] > X
+# auto_break = True
+decision1: [when0=True] > [action0]
+decision2: X
+decision3: X
+decision4: X
 ```
 
 ```text
-policy0: [when0=True] > X 
-policy1: [when1=True] > [action10 > action11]
-policy2: [when20=False > X] > X
+# auto_break = False
+decision1: [when0=True] > [action0]
+decision2: [when1=False] > X
+decision3: [when20=True > when21=True] > X
+decision4: [when31=False > X] > X
 ```
 
 # Install
@@ -35,67 +43,104 @@ policy2: [when20=False > X] > X
 pip install whenact
 ```
 
-# Create WhenAct pipeline
+# Create WhenAct decision flow
 
-Before create a pipeline, you need to define `when` and `act` function first, then put them in the pipeline.
+Simpling use `whenact.add()` to add new decision to the flow process.
 
 ```python
 import whenact
 
-
-@whenact.when
 def w1(ctx):
     return True
 
-@whenact.act
 def a1(ctx):
     return "done"
 
 
-pipeline = whenact.create_pipeline(config=[
-    [w1, a1]
-])
+whenact.add(when=w1, act=a1)
 
-print(pipeline)
+whenact.print_flow()
 # p0: [w1] > [a1]
 
-hist = pipeline.run()
+hist = whenact.run()
 assert hist.last_output == "done"
 assert hist.outputs == ["done"]
 ```
 
-More complex pipeline can be like this:
+More complex pipeline can include more than one decision. Using `whenact.add()` to accumulate decisions.
 
 ```python
 import whenact
 
-@whenact.when
-def w1(ctx):
+
+def w_false(ctx):
     return False
 
-@whenact.when
-def w2(ctx):
+
+def w_true(ctx):
     return True
 
-@whenact.act
+
+def a1(ctx):
+    return 1
+
+
+def a2(ctx):
+    return 2
+
+
+def a3(ctx):
+    return 3
+
+
+whenact.add(when=w_false, act=a1)
+whenact.add(when=w_true, act=[a2, a3])
+
+whenact.print_flow()
+# p0: [w1] > [a1]
+# p1: [w2] > [a2 > a3]
+
+hist = whenact.run()
+print(hist.summary)
+# [p1: w1, p2: w2 > a2 > a3]
+
+assert hist.first_output == 2
+assert hist.last_output == 3
+assert hist.outputs == [2, 3]
+```
+
+The context(ctx) in each `when` and `act` function passes context information from outside. You can store external
+information in context, then pass it to the flow. Moreover, values can be set to the context when inside those
+functions, then be carried out once the flow is finished.
+
+```python
+import whenact
+
+
+def w_false(ctx):
+    return False
+
+
+def w_true(ctx):
+    return True
+
+
 def a1(ctx):
     ctx["action"] = "a1 action"
 
-@whenact.act
+
 def a2(ctx):
     ctx["action"] = "a2 action"
 
-@whenact.act
+
 def a3(ctx):
     ctx["action"] += " with a3"
 
 
-pipeline = whenact.create_pipeline(config=[
-    [w1, a1],
-    [w2, a2, a3]
-])
+whenact.add(when=w_false, act=a1)
+whenact.add(when=w_true, act=[a2, a3])
 
-print(pipeline)
+whenact.print_flow()
 
 
 # p0: [w1] > [a1]
@@ -107,7 +152,7 @@ class TestContext(whenact.BaseContext):
 
 ctx = TestContext()
 
-hist = pipeline.run(ctx)
+hist = whenact.run(ctx)
 print(hist.summary)
 # [p1: w1, p2: w2 > a2 > a3]
 
@@ -116,28 +161,39 @@ assert hist.outputs == [None, None]
 assert ctx["action"] == "a2 action with a3"
 ```
 
-There is another way to set a pipeline, additionally, to set policy name.
+There is another way to set a decision flow.
 
 ```python
 import whenact
 
 
-@whenact.when
-def w1(ctx):
+def w_false(ctx):
+    return False
+
+
+def w_true(ctx):
     return True
 
 
-@whenact.act
 def a1(ctx):
-    ctx["r1"] = 1
-    return "done"
+    return 1
 
 
-pipeline = whenact.Pipeline(
-    [whenact.Behavior(when=[w1], action=[a1], name="my_policy1")]
+def a2(ctx):
+    return 2
+
+
+flow = whenact.DecisionFlow([
+    whenact.Decision(when=[w_false], act=[a1], name="D1"),
+    whenact.Decision(when=[w_true], act=[a2], name="D2"),
+]
 )
-print(pipeline)
-# p0: [w1] > [a1]
+print(flow)
+# D1: [w_false] > [a1]
+# D2: [w_true] > [a2]
+
+hist = flow.run()
+assert hist.first_output == 2
 ```
 
 # More examples

@@ -1,6 +1,7 @@
 import typing as tp
 from collections import OrderedDict
 
+from whenact import block
 from whenact.context import PipelineContext, BaseContext
 from whenact.decision import Decision
 from whenact.history import PipelineHistory
@@ -24,6 +25,8 @@ class DecisionFlow:
             when = [when]
         if not isinstance(act, (tuple, list)):
             act = [act]
+        when = [block.when_decorator.when(f) for f in when]
+        act = [block.act_decorator.act(f) for f in act]
         self.add_decision(Decision(when=when, act=act, name=name))
 
     def add_decision(self, decision: Decision):
