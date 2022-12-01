@@ -33,7 +33,7 @@ decision4: X
 # auto_break = False
 decision1: [when0=True] > [action0]
 decision2: [when1=False] > X
-decision3: [when20=True > when21=True] > X
+decision3: [when20=True > when21=True] > [action2]
 decision4: [when31=False > X] > X
 ```
 
