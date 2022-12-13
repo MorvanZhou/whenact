@@ -10,11 +10,13 @@ FLOW = DecisionFlow()
 
 def add(
         when: tp.Union[WhenFnType, tp.Sequence[WhenFnType]],
-        act: tp.Union[ActFnType, tp.Sequence[ActFnType]],
+        act: tp.Union[ActFnType, tp.Sequence[ActFnType]] = None,
         name: tp.Optional[str] = None,
 ):
     if not isinstance(when, (tuple, list)):
         when = [when]
+    if act is None:
+        act = []
     if not isinstance(act, (tuple, list)):
         act = [act]
     FLOW.add(when=when, act=act, name=name)

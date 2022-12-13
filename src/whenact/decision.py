@@ -35,8 +35,6 @@ class Decision:
             raise TypeError("act must be list type")
         if len(self.when) == 0:
             raise ValueError("when is empty")
-        if len(self.act) == 0:
-            raise ValueError("act is empty")
         for wa in self.when + self.act:
             if not callable(wa):
                 raise TypeError("when and action must be a list of function type")

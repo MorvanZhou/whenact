@@ -18,11 +18,13 @@ class DecisionFlow:
     def add(
             self,
             when: tp.Union[WhenFnType, tp.Sequence[WhenFnType]],
-            act: tp.Union[ActFnType, tp.Sequence[ActFnType]],
+            act: tp.Union[ActFnType, tp.Sequence[ActFnType]] = None,
             name: tp.Optional[str] = None
     ):
         if not isinstance(when, (tuple, list)):
             when = [when]
+        if act is None:
+            act = []
         if not isinstance(act, (tuple, list)):
             act = [act]
         when = [block.when_decorator.when(f) for f in when]

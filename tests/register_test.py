@@ -24,16 +24,26 @@ class TestContext(whenact.BaseContext):
 
 
 class RegisterTest(unittest.TestCase):
-    def test_add(self):
+    def setUp(self) -> None:
+        whenact.clear()
+
+    def test_add1(self):
         ctx = TestContext()
         whenact.add(when=[w_true, w_false], act=a1)
         hist = whenact.run(ctx)
         self.assertIsNone(hist.last_output)
         self.assertFalse(hist.acted)
 
-        whenact.clear()
+    def test_add2(self):
+        ctx = TestContext()
         whenact.add(when=[w_true, w_false], act=[a1, a2])
         whenact.add(when=[w_true, w_true], act=a2)
         hist = whenact.run(ctx)
         self.assertEqual([2], hist.outputs)
         self.assertEqual(2, hist.last_output)
+
+    def test_no_act(self):
+        ctx = TestContext()
+        whenact.add(when=[w_true])
+        hist = whenact.run(ctx)
+        self.assertEqual(None, hist.last_output)
